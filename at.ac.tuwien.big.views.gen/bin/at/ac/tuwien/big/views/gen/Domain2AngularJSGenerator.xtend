@@ -1,12 +1,11 @@
 package at.ac.tuwien.big.views.gen
 
+import at.ac.tuwien.big.views.Class
+import at.ac.tuwien.big.views.DomainModel
 import java.io.File
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.generator.IGenerator
-import at.ac.tuwien.big.views.DomainModel
-import at.ac.tuwien.big.views.Class
-import at.ac.tuwien.big.views.DomainModelElement
 
 class Domain2AngularJSGenerator implements IGenerator {
 	
