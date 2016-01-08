@@ -5,6 +5,7 @@ import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.IFileSystemAccess
 import org.eclipse.xtext.generator.IGenerator
 import at.ac.tuwien.big.views.ViewModel
+import at.ac.tuwien.big.views.ViewGroup
 
 class View2HTMLGenerator implements IGenerator {
 	
@@ -20,8 +21,17 @@ class View2HTMLGenerator implements IGenerator {
 					«generateHead(viewModel)»
 					<body data-ng-controller="«welcomegroup_name»Controller">
 
-«««					//add HTML Elements here
-		
+					<nav class="navbar navbar-default">
+					<div class="container-fluid">
+							<div>
+								<ul class="nav navbar-nav">
+					«FOR current: viewModel.viewGroups»
+					<li><a href="" class="viewgroup" target="Create«getBigWord(current.name)»">«getBigWord(current.name)»</a></li>
+					«ENDFOR»
+								</ul>
+							</div>
+						</div>
+					</nav>
 					</body>
 					</html>'''	
 			)	
@@ -47,9 +57,7 @@ class View2HTMLGenerator implements IGenerator {
 			<script type="text/javascript">
 					$(document).ready(
 						function(){	
-								 
-«««						//register welcome view group here
-						
+		view.addWelcomePage('Create«getBigWord(getWelcomeGroup(viewModel).name)»');
 						  view.init();
 					});
 			</script>
@@ -65,5 +73,9 @@ class View2HTMLGenerator implements IGenerator {
 	def getName(String st){
 		return st.toLowerCase.replaceAll("\\W", "")
 	}
+	
+	def getBigWord(String text) {
+		return text.charAt(0).toString.toUpperCase + text.substring(1);
+	}	
 
 }
