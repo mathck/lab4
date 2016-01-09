@@ -35,5 +35,47 @@ view.addWelcomePage('CreateInstitute');
 		</div>
 	</div>
 </nav>
-</body>
+ 							
+ 							
+ 							
+ 							
+<div class="modal fade" id="modalDelete Course">
+							  	    <div class="modal-dialog">
+							         <div class="modal-content">
+							          <div class="modal-header">
+							           <h4 class="modal-title">Course</h4>
+							          </div>
+							          <div class="modal-body">
+								       <p>Do you really want to delete this course?</p>
+								       <h5>Delete Course</h5>
+<p>type: {{ Course.type }}</p>
+<p>title: {{ Course.title }}</p>
+<p>credits: {{ Course.credits }}</p>
+<p>description: {{ Course.description }}</p>
+<p>date: {{ Course.date }}</p>
+<p>time: {{ Course.time }}</p>
+<p>topic: {{ Course.topic }}</p>
+<p>keywords: {{ Course.keywords }}</p>
+							          </div>
+							          <div class="modal-footer">
+							           <button class="btn btn-default" data-dismiss="modal" data-ng-click="deleteCourse(course.id)">Delete</button>
+							           	                        <button class="btn btn-default" data-dismiss="modal">Cancel</button>
+							          </div>
+							         </div>
+							  	    </div>
+								   </div>
+ 							
+<div class="container" id="Course Index">
+ 		 <h2>Courses</h2>
+ 		 <h3>List of all current courses</h3>
+    		  <ul>
+ 		   <li data-ng-repeat="course in courses">{{ course.title }}
+ 			 <a href="" data-toggle="modal" data-target="#modalShowCourse" data-ng-click="getCourse(course.id)">show</a>
+ 		   </li>
+ 		  </ul>
+    		 </div>
+ 							
+ 							
+</div>
+	 	  		    </body>
 </html>

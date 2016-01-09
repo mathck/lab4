@@ -33,7 +33,7 @@ class Domain2AngularJSGenerator implements IGenerator {
 	var «getDomainModelElementName(current)»s = [];
 	var «getDomainModelElementName(current)»id = 0;
 
-	this.save«getStringFirstLetterCaps(getDomainModelElementName(current))»Service = function («getDomainModelElementName(current)») {
+	this.save«getDomainModelElementName(current).toFirstUpper»Service = function («getDomainModelElementName(current)») {
 		if («getDomainModelElementName(current)».id == null) {
 			«getDomainModelElementName(current)».id = «getDomainModelElementName(current)»id++;
 			«getDomainModelElementName(current)»s.push(«getDomainModelElementName(current)»);
@@ -46,7 +46,7 @@ class Domain2AngularJSGenerator implements IGenerator {
 		}
 	}
 
-	this.get«getStringFirstLetterCaps(getDomainModelElementName(current))»Service = function (id) {
+	this.get«getDomainModelElementName(current).toFirstUpper»Service = function (id) {
 		for (i in «getDomainModelElementName(current)»s) {
 			if («getDomainModelElementName(current)»s[i].id == id) {
 				return «getDomainModelElementName(current)»s[i];
@@ -54,7 +54,7 @@ class Domain2AngularJSGenerator implements IGenerator {
 		}
 	}
 
-	this.delete«getStringFirstLetterCaps(getDomainModelElementName(current))»Service = function (id) {
+	this.delete«getDomainModelElementName(current).toFirstUpper»Service = function (id) {
 		for (i in «getDomainModelElementName(current)»s) {
 			if («getDomainModelElementName(current)»s[i].id == id) {
 				«getDomainModelElementName(current)»s.splice(i, 1);
@@ -62,7 +62,7 @@ class Domain2AngularJSGenerator implements IGenerator {
 		}
 	}
 
-	this.list«getStringFirstLetterCaps(getDomainModelElementName(current))»Service = function () {
+	this.list«getDomainModelElementName(current).toFirstUpper»Service = function () {
 		return «getDomainModelElementName(current)»s;
 	}
 	«ENDFOR»
@@ -72,26 +72,26 @@ class Domain2AngularJSGenerator implements IGenerator {
 	def generateController(DomainModel model) {	'''
 module.controller('«getFirstClassName(model)»Controller', function ($scope, «getFirstClassName(model)»Service) {
 	«FOR current: model.domainModelElements.filter(Class)»
-	$scope.«getDomainModelElementName(current)»s = «getFirstClassName(model)»Service.list«getStringFirstLetterCaps(getDomainModelElementName(current))»Service();
+	$scope.«getDomainModelElementName(current)»s = «getFirstClassName(model)»Service.list«getDomainModelElementName(current).toFirstUpper»Service();
 
-	$scope.save«getStringFirstLetterCaps(getDomainModelElementName(current))» = function () {
-		«getFirstClassName(model)»Service.save«getStringFirstLetterCaps(getDomainModelElementName(current))»Service($scope.new«getDomainModelElementName(current)»);
+	$scope.save«getDomainModelElementName(current).toFirstUpper» = function () {
+		«getFirstClassName(model)»Service.save«getDomainModelElementName(current).toFirstUpper»Service($scope.new«getDomainModelElementName(current)»);
 		$scope.new«getDomainModelElementName(current)» = {};
 	}
 
-	$scope.delete«getStringFirstLetterCaps(getDomainModelElementName(current))» = function (id) {
-		«getFirstClassName(model)»Service.delete«getStringFirstLetterCaps(getDomainModelElementName(current))»Service(id);
+	$scope.delete«getDomainModelElementName(current).toFirstUpper» = function (id) {
+		«getFirstClassName(model)»Service.delete«getDomainModelElementName(current).toFirstUpper»Service(id);
 	}
 
-	$scope.update«getStringFirstLetterCaps(getDomainModelElementName(current))» = function (id) {
-		$scope.new«getDomainModelElementName(current)» = angular.copy(«getFirstClassName(model)»Service.get«getStringFirstLetterCaps(getDomainModelElementName(current))»Service(id));
+	$scope.update«getDomainModelElementName(current).toFirstUpper» = function (id) {
+		$scope.new«getDomainModelElementName(current)» = angular.copy(«getFirstClassName(model)»Service.get«getDomainModelElementName(current).toFirstUpper»Service(id));
 	}
 
-	$scope.get«getStringFirstLetterCaps(getDomainModelElementName(current))» = function (id) {
-		$scope.«getDomainModelElementName(current)» = angular.copy(«getFirstClassName(model)»Service.get«getStringFirstLetterCaps(getDomainModelElementName(current))»Service(id));
+	$scope.get«getDomainModelElementName(current).toFirstUpper» = function (id) {
+		$scope.«getDomainModelElementName(current)» = angular.copy(«getFirstClassName(model)»Service.get«getDomainModelElementName(current).toFirstUpper»Service(id));
 	}
 
-	$scope.navigation«getStringFirstLetterCaps(getDomainModelElementName(current))» = function (targetView) {
+	$scope.navigation«getDomainModelElementName(current).toFirstUpper» = function (targetView) {
 		$(".container").hide(); 
 		var view = angular.element('#'+targetView);
 		view.show();
@@ -117,8 +117,4 @@ module.controller('«getFirstClassName(model)»Controller', function ($scope, «
 	def getClassAmount(DomainModel model) {
 		return model.domainModelElements.filter(Class).size();
 	}
-	
-	def getStringFirstLetterCaps(String text) {
-		return text.charAt(0).toString.toUpperCase + text.substring(1);
-	}	
 }
