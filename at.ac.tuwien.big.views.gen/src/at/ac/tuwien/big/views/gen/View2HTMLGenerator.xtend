@@ -12,6 +12,10 @@ import at.ac.tuwien.big.views.DeleteView
 import at.ac.tuwien.big.views.CreateView
 import at.ac.tuwien.big.views.ReadView
 import at.ac.tuwien.big.views.UpdateView
+import at.ac.tuwien.big.views.PropertyElement
+import at.ac.tuwien.big.views.ViewElement
+import at.ac.tuwien.big.views.Text
+import at.ac.tuwien.big.views.ClassOperationView
 
 class View2HTMLGenerator implements IGenerator {
 	
@@ -91,15 +95,107 @@ class View2HTMLGenerator implements IGenerator {
 			    		 </div>
 				'''
 			ReadView:
-				''' '''
+				'''<div class="modal fade" id="modal«removeWhitespaces(view.name)»">
+			  	    <div class="modal-dialog">
+			         <div class="modal-content">
+			          <div class="modal-header">
+			           <h4 class="modal-title">«view.header»</h4>
+			          </div>
+			          <div class="modal-body">
+				       <p>«view.description»</p>
+				       <h5>«view.name»</h5>
+		       	«FOR currentElementGroup:(view as ReadView).elementGroups»
+		       		«FOR currentViewElement:currentElementGroup.viewElements.filter(PropertyElement)»
+				       <p>«currentViewElement.label»: {{ «view.class_.name.toFirstLower».«(currentViewElement as PropertyElement).property.name.toFirstLower» }}</p>
+			       «ENDFOR»
+				«ENDFOR»
+			          </div>
+			          <div class="modal-footer">
+			           <button class="btn btn-default" data-dismiss="modal" data-ng-click="deleteCourse(course.id)">Delete</button>
+			           	                        <button class="btn btn-default" data-dismiss="modal">Cancel</button>
+			          </div>
+			         </div>
+			  	    </div>
+				   </div> 
+			   '''
 			DeleteView:
-				''' '''
+				'''
+					<div class="modal fade" id="modal«removeWhitespaces(view.name)»">
+							  	    <div class="modal-dialog">
+							         <div class="modal-content">
+							          <div class="modal-header">
+							           <h4 class="modal-title">«view.header»</h4>
+							          </div>
+							          <div class="modal-body">
+								       <p>«view.description»</p>
+								       <h5>«view.name»</h5>
+						       	«FOR currentElementGroup:(view as DeleteView).elementGroups»
+						       		«FOR currentViewElement:currentElementGroup.viewElements.filter(PropertyElement)»
+								       <p>«currentViewElement.label»: {{ «view.class_.name.toFirstLower».«(currentViewElement as PropertyElement).property.name.toFirstLower» }}</p>
+							       «ENDFOR»
+								«ENDFOR»
+							          </div>
+							          <div class="modal-footer">
+							           <button class="btn btn-default" data-dismiss="modal" data-ng-click="deleteCourse(course.id)">Delete</button>
+							           	                        <button class="btn btn-default" data-dismiss="modal">Cancel</button>
+							          </div>
+							         </div>
+							  	    </div>
+								   </div> 
+		   		'''
 			CreateView:
-				''' '''
+				'''
+ 								<div class="container" id="«removeWhitespaces(view.name)»">
+					  			<h2>«view.header»</h2>
+					  		  	<form name="«removeWhitespaces(view.name)»Form" novalidate>
+								 <p>«view.description»</p>
+					 			 <div class="panel-group">
+					 			 «IF view.layout.alignment=="Horizontal"»
+					 			 <div class="row">
+					 			 «ENDIF»
+					 			 «FOR currentElementGroup : (view as CreateView).elementGroups»
+					 		 	 	«IF currentElementGroup.layout.alignment=="Vertical"»
+					 		 	  	<div class="elementgroup">
+					 		 	  	«ELSE»
+					 		 	  	<div class="elementgroup col-sm-6">
+									«ENDIF»
+										<h4>«currentElementGroup.header»</h4>
+					 		 	  		   <div class="panel-body">
+			 		 	  		   	«IF currentElementGroup.layout.alignment=="Horizontal"»
+					 		 	  	<div class="form-inline" role="form">
+				 		 	  		«ENDIF»
+				 		 	  		«FOR currentViewElement:currentElementGroup.viewElements»
+					 		 	  		   <div class="form-group">
+				 		 	  				«generateViewElementCode(view, currentViewElement)»
+				 		 	  				</div>
+				 		 	  		«ENDFOR» 
+					 		 	  		    </div>
+					 		 	  		   </div>
+					 		 	  		   «ENDFOR»
+					 		 	  		   </div>
+					             </div>
+								</form>
+								</div>
+							'''
 			UpdateView:
 				''' '''
 			default:
 				'''Whoops. Class not found.'''
+		}
+	}
+
+	def generateViewElementCode(ClassOperationView view, ViewElement viewElement){
+		switch viewElement{
+			Text:
+				'''
+	 		 	  		      <label for="«viewElement.elementID»">«viewElement.label»:«IF viewElement.isMandatory»<span>*</span>«ENDIF»:</label>	
+	 	  		        	   <«IF viewElement.long»textarea«ELSE»input type="text"«ENDIF» class="form-control" id="«viewElement.elementID»" name="«viewElement.property.name.toFirstLower»" data-ng-model="new«view.class_.name.toFirstLower».«viewElement.property.name.toFirstLower»" 
+	  		        	   		«IF viewElement.isMandatory» required «ENDIF»«IF !((viewElement as Text).format.isNullOrEmpty)»data-ng-pattern="/«(viewElement as Text).format»/"«ENDIF» />
+	  		        	   		<span class="CreateInstituteSpan" style="color:red" data-ng-show="«view.name.removeWhitespaces»Form.«viewElement.label.toFirstLower».$dirty && «view.name.removeWhitespaces»Form.«viewElement.label.toFirstLower».$invalid">
+	 	  		    		    	«IF viewElement.isMandatory»<span data-ng-show="«view.name.removeWhitespaces»Form.«viewElement.label.toFirstLower».$error.required">Input is mandatory.</span>«ENDIF»
+	 	  		    		    	«IF !((viewElement as Text).format.isNullOrEmpty)»<span data-ng-show="«view.name.removeWhitespaces»Form.«viewElement.label.toFirstLower».$error.pattern">Input doesn't match expected pattern.</span>«ENDIF»
+	 	  		    		  	</span>
+				'''
 		}
 	}
 
@@ -117,8 +213,12 @@ class View2HTMLGenerator implements IGenerator {
 		return text.replaceAll("\\s+","");
 	}
 	
-	def toCreateView(View view){
-		return view 
+	def isMandatory(PropertyElement element){
+		if(element.property.lowerBound==1 && element.property.upperBound==1){
+			return true;
+		}else{
+			return false;
+		}
 	}
 
 }
