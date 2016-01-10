@@ -16,6 +16,14 @@ import at.ac.tuwien.big.views.PropertyElement
 import at.ac.tuwien.big.views.ViewElement
 import at.ac.tuwien.big.views.Text
 import at.ac.tuwien.big.views.ClassOperationView
+import at.ac.tuwien.big.views.Selection
+import at.ac.tuwien.big.views.DateTimePicker
+import at.ac.tuwien.big.views.impl.DateTimePickerImpl
+import at.ac.tuwien.big.views.EnumerationLiteralItem
+import javax.swing.LayoutStyle
+import at.ac.tuwien.big.views.List
+import at.ac.tuwien.big.views.Table
+import at.ac.tuwien.big.views.DomainModelElement
 
 class View2HTMLGenerator implements IGenerator {
 	
@@ -30,18 +38,17 @@ class View2HTMLGenerator implements IGenerator {
 					<html lang="en" data-ng-app="«welcomegroup_name»App">
 					«generateHead(viewModel)»
 					<body data-ng-controller="«welcomegroup_name»Controller">
-
-					<nav class="navbar navbar-default">
-					<div class="container-fluid">
-							<div>
-								<ul class="nav navbar-nav">
+						<nav class="navbar navbar-default">
+							<div class="container-fluid">
+								<div>
+									<ul class="nav navbar-nav">
 					«FOR current: viewModel.viewGroups»
-					<li><a href="" class="viewgroup" target="Create«(current.name).toFirstUpper»">«(current.name).toFirstUpper»</a></li>
+					<li><a href="" class="viewgroup" target="«(current.views.findFirst[it.startView == true].name.replace(" ", "")).toFirstUpper»">«(current.name).toFirstUpper»</a></li>
 					«ENDFOR»
-								</ul>
+									</ul>
+								</div>
 							</div>
-						</div>
-					</nav>
+						</nav>
 					«FOR currentViewGroup: viewModel.viewGroups»
 						«FOR currentView: currentViewGroup.views»
 							«generateViewCode(currentView)»
@@ -72,10 +79,10 @@ class View2HTMLGenerator implements IGenerator {
 			<script src="«getWelcomeGroup(viewModel).name».js"></script>
 			<script type="text/javascript">
 					$(document).ready(
-						function(){	
-		view.addWelcomePage('Create«getWelcomeGroup(viewModel).name.toFirstUpper»');
-						  view.init();
-					});
+						function(){				 
+		view.addWelcomePage('Create«(getWelcomeGroup(viewModel)).name.toFirstUpper»');
+							view.init();
+						});
 			</script>
 		</head>'''
 	}
@@ -150,18 +157,18 @@ class View2HTMLGenerator implements IGenerator {
 					  		  	<form name="«removeWhitespaces(view.name)»Form" novalidate>
 								 <p>«view.description»</p>
 					 			 <div class="panel-group">
-					 			 «IF view.layout.alignment=="Horizontal"»
+					 			 «IF view.layout.alignment.equals(at.ac.tuwien.big.views.LayoutStyle.HORIZONTAL)»
 					 			 <div class="row">
 					 			 «ENDIF»
 					 			 «FOR currentElementGroup : (view as CreateView).elementGroups»
-					 		 	 	«IF currentElementGroup.layout.alignment=="Vertical"»
-					 		 	  	<div class="elementgroup">
+					 		 	 	«IF view.layout.alignment.equals(at.ac.tuwien.big.views.LayoutStyle.VERTICAL)»
+					 		 	  	<div class="elementgroup" «getConditions()»>
 					 		 	  	«ELSE»
-					 		 	  	<div class="elementgroup col-sm-6">
+					 		 	  	<div class="elementgroup col-sm-6" «getConditions()»>
 									«ENDIF»
 										<h4>«currentElementGroup.header»</h4>
 					 		 	  		   <div class="panel-body">
-			 		 	  		   	«IF currentElementGroup.layout.alignment=="Horizontal"»
+			 		 	  		   	«IF currentElementGroup.layout.alignment.equals(at.ac.tuwien.big.views.LayoutStyle.HORIZONTAL)»
 					 		 	  	<div class="form-inline" role="form">
 				 		 	  		«ENDIF»
 				 		 	  		«FOR currentViewElement:currentElementGroup.viewElements»
@@ -185,18 +192,143 @@ class View2HTMLGenerator implements IGenerator {
 	}
 
 	def generateViewElementCode(ClassOperationView view, ViewElement viewElement){
-		switch viewElement{
+		switch viewElement {
 			Text:
 				'''
 	 		 	  		      <label for="«viewElement.elementID»">«viewElement.label»:«IF viewElement.isMandatory»<span>*</span>«ENDIF»:</label>	
 	 	  		        	   <«IF viewElement.long»textarea«ELSE»input type="text"«ENDIF» class="form-control" id="«viewElement.elementID»" name="«viewElement.property.name.toFirstLower»" data-ng-model="new«view.class_.name.toFirstLower».«viewElement.property.name.toFirstLower»" 
 	  		        	   		«IF viewElement.isMandatory» required «ENDIF»«IF !((viewElement as Text).format.isNullOrEmpty)»data-ng-pattern="/«(viewElement as Text).format»/"«ENDIF» />
-	  		        	   		<span class="CreateInstituteSpan" style="color:red" data-ng-show="«view.name.removeWhitespaces»Form.«viewElement.label.toFirstLower».$dirty && «view.name.removeWhitespaces»Form.«viewElement.label.toFirstLower».$invalid">
-	 	  		    		    	«IF viewElement.isMandatory»<span data-ng-show="«view.name.removeWhitespaces»Form.«viewElement.label.toFirstLower».$error.required">Input is mandatory.</span>«ENDIF»
-	 	  		    		    	«IF !((viewElement as Text).format.isNullOrEmpty)»<span data-ng-show="«view.name.removeWhitespaces»Form.«viewElement.label.toFirstLower».$error.pattern">Input doesn't match expected pattern.</span>«ENDIF»
-	 	  		    		  	</span>
+	  		        	   		«getErrorSpanTags(view, viewElement)»
 				'''
+			Selection:
+			'''
+			<label for="«viewElement.elementID»">«viewElement.label»:«IF viewElement.isMandatory»<span>*</span>«ENDIF»:</label>
+			<select data-ng-option class="form-control" id="«viewElement.elementID»"
+			data-ng-model="new«view.class_.name.toFirstLower».«viewElement.property.name.toFirstLower»" «IF viewElement.isMandatory» required «ENDIF» «getConditions()» >
+			<option value="" disabled selected>Select your option</option>
+			«FOR item:(viewElement as Selection).selectionItems»
+			«IF (item instanceof EnumerationLiteralItem)»<option value="«(item as EnumerationLiteralItem).enumerationLiteral.value»">«(item as EnumerationLiteralItem).value»</option>«ELSE»<option value="«item.value»">«item.value»</option>«ENDIF»
+			«ENDFOR»
+			</select>
+			«getErrorSpanTags(view, viewElement)»
+			'''
+			DateTimePicker:
+			'''
+			<div class="row">
+				<div class="col-xs-6 col-sm-12">
+					<div class="form-group">
+						<label for="«viewElement.elementID»">«viewElement.label»:«IF viewElement.isMandatory»<span>*</span>«ENDIF»:</label>
+						//pickers for properties with datatype "Date":
+							<div «IF viewElement.isMandatory» required «ENDIF» class="input-group date" id="picker«viewElement.elementID»" style="calendar">
+								<div class='input-group date' id='picker«viewElement.elementID»' style='«IF viewElement.property.type.name.equals("Time")»time«ELSE»calendar«ENDIF»'>
+									<input type="text" class="form-control" id="«viewElement.elementID»" name="date"
+									data-ng-model="new«view.class_.name.toFirstLower».«viewElement.property.name.toFirstLower»" data-ng-pattern="«(viewElement as DateTimePicker).format»"
+									«getConditions()» />
+							<span class="input-group-addon">
+								<span class="glyphicon glyphicon-«IF viewElement.property.type.name.equals("Time")»time«ELSE»calendar«ENDIF»"></span>
+							</span>
+						</div>
+					</div>
+				</div>
+			</div>
+			«getErrorSpanTags(view, viewElement)»
+			'''
+			List:
+			'''
+			<div «getConditions()»/>
+			<h5>«viewElement.label»</h5>
+			<ul id="«viewElement.elementID»">
+			<li data-ng-repeat="«viewElement.association.navigableEnd.type.name.toLowerCase.removeWhitespaces» in «viewElement.association.navigableEnd.type.name.toLowerCase.removeWhitespaces»s">
+			{{ «viewElement.association.navigableEnd.type.name.toLowerCase.removeWhitespaces».«(viewElement.association.navigableEnd.type as at.ac.tuwien.big.views.Class).id.name.removeWhitespaces.toFirstLower » }}
+			«getLinks()»
+			</li>
+			</ul>
+			«getButtons()»
+			</div>
+			'''
+			Table:
+			'''
+			<div «getConditions()»>
+				<h5>«viewElement.label»</h5>
+				<table class="table table-striped" id="«viewElement.elementID»">
+				<thead>
+				<tr>
+				«FOR col:(viewElement as Table).columns»
+				<th>«col.label»</th>
+				«ENDFOR»
+				<th></th>
+				</tr>
+				</thead>
+				<tbody>
+				<tr data-ng-repeat="«viewElement.association.navigableEnd.type.name.toLowerCase.removeWhitespaces» in «viewElement.association.navigableEnd.type.name.toLowerCase.removeWhitespaces»s">
+				«FOR col:(viewElement as Table).columns»
+				<td> {{ «viewElement.association.navigableEnd.type.name.toLowerCase.removeWhitespaces».«col.property.name.toFirstLower» }} </td>
+				«ENDFOR»
+				<td>
+				«getLinks()»
+				</tr>
+				</tbody>
+				</table>
+				«getButtons()»
+			</div>
+			'''
+			default: ''''''
 		}
+	}
+	
+	def getLinks() {
+		
+	}
+	
+	def getAddButtons(View targetView) {
+		'''<button value="«targetView.name.removeWhitespaces»" class="btn btn-primary btn-sm">Add</button>'''
+	}
+	
+	def getSaveButtons(View view, ViewGroup welcomeViewGroup) {
+		'''
+		«IF !(view.isStartView == true && welcomeViewGroup.views.contains(view) && welcomeViewGroup.welcomeViewGroup == true)»
+		<button value="«welcomeViewGroup.views.findFirst[it.startView].name.removeWhitespaces»" class="btn btn-primary btn-sm"
+			data-ng-disabled="«view.name.removeWhitespaces»Form.$invalid"
+			data-ng-click="save«view.class_.name.removeWhitespaces»">
+			Save
+		</button>
+		«ENDIF»
+		'''
+	}
+	
+	def getModalButtons(View view) {
+		'''
+		//modal buttons for read view
+		<button class="btn btn-default" data-dismiss="modal">Close</button>
+		//modal buttons for delete view
+		<button class="btn btn-default" data-dismiss="modal"
+		data-ng-click="delete«view.class_.name.toFirstUpper»(«view.class_.name.toFirstLower».id)">Delete</button>
+		<button class="btn btn-default" data-dismiss="modal">Cancel</button>
+		'''
+	}
+	
+	def getConditions() {
+		
+	}
+	
+	def getErrorSpanTags(ClassOperationView view, PropertyElement viewElement) {
+		switch viewElement {
+			Text:
+			'''<span class="CreateInstituteSpan" style="color:red" data-ng-show="«view.name.removeWhitespaces»Form.«viewElement.label.toFirstLower.removeWhitespaces».$dirty && «view.name.removeWhitespaces»Form.«viewElement.label.toFirstLower.removeWhitespaces».$invalid">
+	    	«IF viewElement.isMandatory»<span data-ng-show="«view.name.removeWhitespaces»Form.«viewElement.label.toFirstLower.removeWhitespaces».$error.required">Input is mandatory.</span>«ENDIF»
+	    	«IF !((viewElement as Text).format.isNullOrEmpty)»<span data-ng-show="«view.name.removeWhitespaces»Form.«viewElement.label.toFirstLower».$error.pattern">Input doesn't match expected pattern.</span>«ENDIF»
+	  	</span>'''
+	  		DateTimePicker:
+	  		'''<span class="CreateInstituteSpan" style="color:red" data-ng-show="«view.name.removeWhitespaces»Form.«viewElement.label.toFirstLower.removeWhitespaces».$dirty && «view.name.removeWhitespaces»Form.«viewElement.label.toFirstLower.removeWhitespaces».$invalid">
+	    	«IF viewElement.isMandatory»<span data-ng-show="«view.name.removeWhitespaces»Form.«viewElement.label.toFirstLower.removeWhitespaces».$error.required">Input is mandatory.</span>«ENDIF»
+	    	«IF !((viewElement as DateTimePicker).format.isNullOrEmpty)»<span data-ng-show="«view.name.removeWhitespaces»Form.«viewElement.label.toFirstLower.removeWhitespaces».$error.pattern">Input doesn't match expected pattern.</span>«ENDIF»
+	  	</span>'''
+	  		Selection:
+	  		'''<span class="CreateInstituteSpan" style="color:red" data-ng-show="«view.name.removeWhitespaces»Form.«viewElement.label.toFirstLower.removeWhitespaces».$dirty && «view.name.removeWhitespaces»Form.«viewElement.label.toFirstLower.removeWhitespaces».$invalid">
+	    	«IF viewElement.isMandatory»<span data-ng-show="«view.name.removeWhitespaces»Form.«viewElement.label.toFirstLower.removeWhitespaces».$error.required">Input is mandatory.</span>«ENDIF»
+	  	</span>'''
+		}
+		
 	}
 
 	def getWelcomeGroup(ViewModel model) {
