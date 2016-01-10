@@ -24,6 +24,8 @@ import javax.swing.LayoutStyle
 import at.ac.tuwien.big.views.List
 import at.ac.tuwien.big.views.Table
 import at.ac.tuwien.big.views.DomainModelElement
+import at.ac.tuwien.big.views.LinkableElement
+import at.ac.tuwien.big.views.AssociationElement
 
 class View2HTMLGenerator implements IGenerator {
 	
@@ -98,7 +100,8 @@ class View2HTMLGenerator implements IGenerator {
 			 		   <li data-ng-repeat="«view.class_.name.toFirstLower» in «view.class_.name.toFirstLower»s">{{ «view.class_.name.toFirstLower».«view.class_.id.name.toFirstLower» }}
 			 			 <a href="" data-toggle="modal" data-target="#modalShow«view.class_.name»" data-ng-click="getCourse(«view.class_.name.toFirstLower».id)">show</a>
 			 		   </li>
-			 		  </ul>
+			 		   «getIndexLinks(view)»
+			 		   	</ul>
 			    		 </div>
 				'''
 			ReadView:
@@ -240,10 +243,10 @@ class View2HTMLGenerator implements IGenerator {
 			<ul id="«viewElement.elementID»">
 			<li data-ng-repeat="«viewElement.association.navigableEnd.type.name.toLowerCase.removeWhitespaces» in «viewElement.association.navigableEnd.type.name.toLowerCase.removeWhitespaces»s">
 			{{ «viewElement.association.navigableEnd.type.name.toLowerCase.removeWhitespaces».«(viewElement.association.navigableEnd.type as at.ac.tuwien.big.views.Class).id.name.removeWhitespaces.toFirstLower » }}
-			«getLinks()»
+			«getLinks(viewElement)»
 			</li>
 			</ul>
-			«getButtons()»
+			«getAddButtons(view)»
 			</div>
 			'''
 			Table:
@@ -265,23 +268,73 @@ class View2HTMLGenerator implements IGenerator {
 				<td> {{ «viewElement.association.navigableEnd.type.name.toLowerCase.removeWhitespaces».«col.property.name.toFirstLower» }} </td>
 				«ENDFOR»
 				<td>
-				«getLinks()»
+				«getLinks(viewElement)»
 				</tr>
 				</tbody>
 				</table>
-				«getButtons()»
+				«getAddButtons(view)»
 			</div>
 			'''
 			default: ''''''
 		}
 	}
 	
-	def getLinks() {
-		
+	def getIndexLinks(View view) {
+		if(view instanceof ClassIndexView){
+			'''
+			«FOR link:(view as ClassIndexView).link» 
+				//link to read view
+				<a href="" data-toggle="modal" data-target="#modalShowCourse"
+				data-ng-click="getCourse(course.id)">show</a>
+				13
+				//link to delete view
+				<a href="" data-toggle="modal" data-target="#modalDeleteCourse"
+				data-ng-click="getCourse(course.id)">delete</a></td>
+				//link to update view <a href="" data-ng-click="navigationProfessor('UpdateProfessor');
+				updateProfessor(professor.id)">udpate</a>
+			«ENDFOR»
+			'''
+		}
+	}
+	
+	def getLinks(ViewElement viewElement) {
+		switch viewElement  {
+			Table:
+			'''
+			«FOR link:(viewElement as Table).link» 
+				«IF(link.label.equalsIgnoreCase("update"))»
+					<a href="" data-ng-click="navigation«link.targetView.class_.name»('«link.targetView.name.removeWhitespaces»');
+					update«link.targetView.class_.name»(«link.targetView.class_.name.toFirstLower».id)">udpate</a>
+				«ENDIF»
+				«IF(link.label.equalsIgnoreCase("show"))»
+					<a href="" data-toggle="modal" data-target="#modal«link.targetView.name.removeWhitespaces»" data-ng-click="get«link.targetView.class_.name»(«link.targetView.class_.name.toFirstLower».id)">show</a>
+				«ENDIF»
+				«IF(link.label.equalsIgnoreCase("show"))»
+					<a href="" data-toggle="modal" data-target="#modalDeleteCourse"	data-ng-click="getCourse(course.id)">delete</a></td>
+				«ENDIF»
+			«ENDFOR»
+			'''
+			List:
+			'''
+			«FOR link:(viewElement as Table).link» 
+				//link to read view
+				<a href="" data-toggle="modal" data-target="#modalShowCourse"
+				data-ng-click="getCourse(course.id)">show</a>
+				13
+				//link to delete view
+				<a href="" data-toggle="modal" data-target="#modalDeleteCourse"
+				data-ng-click="getCourse(course.id)">delete</a></td>
+				//link to update view <a href="" data-ng-click="navigationProfessor('UpdateProfessor');
+				updateProfessor(professor.id)">udpate</a>
+			«ENDFOR»
+			'''
+		}
 	}
 	
 	def getAddButtons(View targetView) {
-		'''<button value="«targetView.name.removeWhitespaces»" class="btn btn-primary btn-sm">Add</button>'''
+		'''
+		<button value="«targetView.name.removeWhitespaces»" class="btn btn-primary btn-sm">Add</button>
+		'''
 	}
 	
 	def getSaveButtons(View view, ViewGroup welcomeViewGroup) {
@@ -298,6 +351,7 @@ class View2HTMLGenerator implements IGenerator {
 	
 	def getModalButtons(View view) {
 		'''
+		switch
 		//modal buttons for read view
 		<button class="btn btn-default" data-dismiss="modal">Close</button>
 		//modal buttons for delete view
