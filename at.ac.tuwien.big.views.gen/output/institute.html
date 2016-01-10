@@ -257,7 +257,7 @@ view.addWelcomePage('CreateInstitute');
 									<label for="15">Date:</label>
 									<div  class="input-group date" id="picker15" style="calendar">
 											<input type="text" class="form-control" id="15" name="date"
-											data-ng-model="newcourse.date" data-ng-pattern="dddd, MMMM Do YYYY"
+											data-ng-model="newcourse.date" data-ng-pattern="/dddd, MMMM Do YYYY/"
 											 />
 											<span class="input-group-addon">
 												<span class="glyphicon glyphicon-calendar"></span>
@@ -277,7 +277,7 @@ view.addWelcomePage('CreateInstitute');
 									<label for="16">Time:</label>
 									<div  class="input-group date" id="picker16" style="time">
 											<input type="text" class="form-control" id="16" name="date"
-											data-ng-model="newcourse.time" data-ng-pattern="h:mm A"
+											data-ng-model="newcourse.time" data-ng-pattern="/h:mm A/"
 											 />
 											<span class="input-group-addon">
 												<span class="glyphicon glyphicon-time"></span>
@@ -338,8 +338,9 @@ view.addWelcomePage('CreateInstitute');
 <p>Title: {{ course.title }}</p>
 		          </div>
 		          <div class="modal-footer">
-		           <button class="btn btn-default" data-dismiss="modal" data-ng-click="deleteCourse(course.id)">Delete</button>
-		           	                        <button class="btn btn-default" data-dismiss="modal">Cancel</button>
+					<button class="btn btn-default" data-dismiss="modal"
+					data-ng-click="deleteCourse(course.id)">Delete</button>
+					<button class="btn btn-default" data-dismiss="modal">Cancel</button>
 		          </div>
 		         </div>
 		  	    </div>
@@ -367,8 +368,7 @@ view.addWelcomePage('CreateInstitute');
 <p>Description: {{ course.description }}</p>
 			          </div>
 			          <div class="modal-footer">
-			           <button class="btn btn-default" data-dismiss="modal" data-ng-click="deleteCourse(course.id)">Delete</button>
-			           	                        <button class="btn btn-default" data-dismiss="modal">Cancel</button>
+						<button class="btn btn-default" data-dismiss="modal">Close</button>
 			          </div>
 			         </div>
 			  	    </div>

@@ -123,8 +123,7 @@ class View2HTMLGenerator implements IGenerator {
 				«ENDFOR»
 			          </div>
 			          <div class="modal-footer">
-			           <button class="btn btn-default" data-dismiss="modal" data-ng-click="deleteCourse(course.id)">Delete</button>
-			           	                        <button class="btn btn-default" data-dismiss="modal">Cancel</button>
+						«getModalButtons(view)»
 			          </div>
 			         </div>
 			  	    </div>
@@ -148,8 +147,7 @@ class View2HTMLGenerator implements IGenerator {
 								«ENDFOR»
 							          </div>
 							          <div class="modal-footer">
-							           <button class="btn btn-default" data-dismiss="modal" data-ng-click="deleteCourse(course.id)">Delete</button>
-							           	                        <button class="btn btn-default" data-dismiss="modal">Cancel</button>
+										«getModalButtons(view)»
 							          </div>
 							         </div>
 							  	    </div>
@@ -163,6 +161,7 @@ class View2HTMLGenerator implements IGenerator {
 				'''Whoops. Class not found.'''
 		}
 	}
+	
 	
 	def generateCreateOrUpdateView(ClassOperationView view, ViewGroup viewGroup) {
 		'''
@@ -235,7 +234,7 @@ class View2HTMLGenerator implements IGenerator {
 						<label for="«viewElement.elementID»">«viewElement.label»«IF viewElement.isMandatory»<span>*</span>«ENDIF»:</label>
 						<div «IF viewElement.isMandatory» required «ENDIF» class="input-group date" id="picker«viewElement.elementID»" style="«IF viewElement.property.type.name.equals("Time")»time«ELSE»calendar«ENDIF»">
 								<input type="text" class="form-control" id="«viewElement.elementID»" name="date"
-								data-ng-model="new«view.class_.name.toFirstLower».«viewElement.property.name.toFirstLower»" data-ng-pattern="«(viewElement as DateTimePicker).format»"
+								data-ng-model="new«view.class_.name.toFirstLower».«viewElement.property.name.toFirstLower»" data-ng-pattern="/«(viewElement as DateTimePicker).format»/"
 								«getConditions(view, viewElement)» />
 								<span class="input-group-addon">
 									<span class="glyphicon glyphicon-«IF viewElement.property.type.name.equals("Time")»time«ELSE»calendar«ENDIF»"></span>
@@ -332,11 +331,9 @@ class View2HTMLGenerator implements IGenerator {
 	def getModalButtons(View view) {
 		'''
 		«IF (view instanceof ReadView)»
-		//modal buttons for read view
 		<button class="btn btn-default" data-dismiss="modal">Close</button>
 		«ENDIF»
 		«IF (view instanceof DeleteView) »
-		//modal buttons for delete view
 		<button class="btn btn-default" data-dismiss="modal"
 		data-ng-click="delete«view.class_.name.toFirstUpper»(«view.class_.name.toFirstLower».id)">Delete</button>
 		<button class="btn btn-default" data-dismiss="modal">Cancel</button>
